@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Angelos Rooms Pro</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#4f7c82" />
+  <style>
+    :root{
+      --bg:#f5f7f8;
+      --card:#ffffff;
+      --ink:#183036;
+      --muted:#67808a;
+      --accent:#4f7c82;
+      --accent-2:#b7d4d8;
+      --line:#dce7e9;
+      --ok:#2f7d5c;
+      --warn:#b7791f;
+      --danger:#b34848;
+      --shadow:0 10px 30px rgba(24,48,54,.08);
+      --radius:18px;
+      --booked:#ffe5e5;
+      --arrival:var(--booked);
+      --departure:var(--booked);
+      --free:#eef7ef;
+      --today:#edf7f9;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+    body{padding:env(safe-area-inset-top) 14px calc(14px + env(safe-area-inset-bottom));max-width:1200px;margin:0 auto}
+    .app{display:grid;gap:14px}
+    .hero{background:linear-gradient(135deg,var(--accent),#6a9aa1);color:#fff;border-radius:24px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+    .hero h1{margin:0;font-size:28px;letter-spacing:.2px}
+    .hero p{margin:6px 0 0;color:rgba(255,255,255,.9)}
+    .tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .tabbtn{border:none;border-radius:16px;padding:12px 8px;background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-size:13px;font-weight:600}
+    .tabbtn.active{background:var(--accent);color:#fff}
+    .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .grid{display:grid;gap:12px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+    @media (max-width:900px){.tabs{grid-template-columns:repeat(3,1fr)} .grid.two,.grid.three,.grid.four{grid-template-columns:1fr}}
+    h2{margin:0 0 10px;font-size:20px}
+    h3{margin:0 0 8px;font-size:16px}
+    label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}
+    input,select,textarea,button{font:inherit}
+    input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
+    textarea{min-height:110px;resize:vertical}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:none;border-radius:14px;padding:12px 16px;font-weight:700}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.secondary{background:#edf4f5;color:var(--ink)}
+    .btn.danger{background:#fff1f1;color:var(--danger)}
+    .btn.ok{background:#e7f7ef;color:var(--ok)}
+    .kpi{padding:14px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff,#f9fcfc)}
+    .kpi .n{font-size:26px;font-weight:800;margin-top:4px}
+    .muted{color:var(--muted)}
+    .room-list,.booking-list,.note-list,.backup-list,.month-list{display:grid;gap:10px}
+    .item{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
+    .itemhead{display:flex;justify-content:space-between;gap:10px;align-items:start}
+    .pill{display:inline-block;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700}
+    .pill.booked{background:var(--booked);color:#9d3b3b}
+    .pill.free{background:#e6f7ee;color:#256b4d}
+    .pill.arrival,.pill.departure{background:var(--booked);color:#9d3b3b}
+    
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+    th{color:var(--muted);font-weight:700}
+    .small{font-size:12px}
+    .hidden{display:none !important}
+    .footer-note{font-size:12px;color:var(--muted);text-align:center;padding:6px 0 10px}
+    .calendar-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px}
+    .calendar-table{min-width:980px;background:#fff}
+    .calendar-table th:first-child,.calendar-table td:first-child{position:sticky;left:0;background:#fff;z-index:2}
+    .calendar-table thead th{position:sticky;top:0;background:#f8fbfb;z-index:1}
+    .calendar-table td.daycell{min-width:34px;width:34px;text-align:center;padding:8px 4px}
+    .calendar-table td.daycell.today{background:var(--today);font-weight:700}
+    .calendar-table td.daycell.booked{background:var(--booked)}
+    .calendar-table td.daycell.arrival,.calendar-table td.daycell.departure{background:var(--booked)}
+    
+    .calendar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .legend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+    .swatch{width:16px;height:16px;border-radius:6px;border:1px solid var(--line)}
+    .month-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    .month-card{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="hero">
+    <h1>Angelos Rooms</h1>
+    <p>Απλή διαχείριση δωματίων, κρατήσεων, τιμών, εσόδων, backup και μηνιαίου ημερολογίου.</p>
+  </section>
+
+  <nav class="tabs">
+    <button class="tabbtn active" data-tab="overview">Δωμάτια</button>
+    <button class="tabbtn" data-tab="bookings">Κρατήσεις</button>
+    <button class="tabbtn" data-tab="calendar">Ημερολόγιο</button>
+    <button class="tabbtn" data-tab="prices">Τιμές</button>
+    <button class="tabbtn" data-tab="income">Έσοδα</button>
+    <button class="tabbtn" data-tab="notes">Σημειώσεις</button>
+    <button class="tabbtn" data-tab="backup">Backup</button>
+  </nav>
+
+  <section id="overview" class="tab card">
+    <h2>Σύνοψη δωματίων</h2>
+    <div class="grid three" id="overviewKpis"></div>
+    <div class="grid two" style="margin-top:12px">
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Κατάσταση σήμερα</h3>
+        <div id="todayStatus" class="room-list"></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Προσθήκη / επεξεργασία δωματίου</h3>
+        <div class="grid">
+          <div><label>Όνομα δωματίου</label><input id="roomName" placeholder="π.χ. Δωμάτιο 1"></div>
+          <div><label>Σημείωση</label><input id="roomNote" placeholder="π.χ. θέα θάλασσα"></div>
+          <div class="actions">
+            <button class="btn primary" id="saveRoomBtn">Αποθήκευση δωματίου</button>
+            <button class="btn secondary" id="resetRoomBtn">Καθαρισμός</button>
+          </div>
+          <input type="hidden" id="roomEditId">
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;box-shadow:none;border:1px solid var(--line)">
+      <h3>Όλα τα δωμάτια</h3>
+      <div id="allRooms" class="room-list"></div>
+    </div>
+  </section>
+
+  <section id="bookings" class="tab card hidden">
+    <h2>Κρατήσεις</h2>
+    <div class="grid two">
+      <div>
+        <div class="grid">
+          <div><label>Δωμάτιο</label><select id="bookingRoom"></select></div>
+          <div><label>Όνομα πελάτη</label><input id="guestName" placeholder="π.χ. Maria"></div>
+          <div class="grid two">
+            <div><label>Άφιξη</label><input id="checkIn" type="date"></div>
+            <div><label>Αναχώρηση</label><input id="checkOut" type="date"></div>
+          </div>
+          <div class="grid two">
+            <div><label>Τιμή ανά νύχτα (€)</label><input id="nightPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
+            <div><label>Κατάσταση</label>
+              <select id="bookingStatus">
+                <option value="Κατειλημμένο">Κατειλημμένο</option>
+              </select>
+            </div>
+          </div>
+          <div><label>Σημείωση</label><input id="bookingNote" placeholder="π.χ. Booking, τηλεφωνικά, προκαταβολή"></div>
+          <div class="actions">
+            <button class="btn primary" id="saveBookingBtn">Αποθήκευση κράτησης</button>
+            <button class="btn secondary" id="resetBookingBtn">Καθαρισμός</button>
+          </div>
+          <input type="hidden" id="bookingEditId">
+        </div>
+      </div>
+      <div>
+        <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+          <h3>Επερχόμενες και τρέχουσες κρατήσεις</h3>
+          <div id="bookingList" class="booking-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="calendar" class="tab card hidden">
+    <h2>Ημερολόγιο κρατήσεων</h2>
+    <div class="grid two">
+      <div class="actions">
+        <button class="btn secondary" id="prevMonthBtn">◀ Προηγούμενος</button>
+        <button class="btn secondary" id="nextMonthBtn">Επόμενος ▶</button>
+        <button class="btn primary" id="currentMonthBtn">Σήμερα</button>
+      </div>
+      <div>
+        <label>Μήνας προβολής</label>
+        <input id="calendarMonth" type="month">
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;box-shadow:none;border:1px solid var(--line)">
+      <h3 id="calendarTitle">Μηνιαία προβολή</h3>
+      <div class="calendar-wrap">
+        <table class="calendar-table">
+          <thead id="calendarHead"></thead>
+          <tbody id="calendarBody"></tbody>
+        </table>
+      </div>
+      <div class="calendar-legend">
+        <div class="legend"><span class="swatch" style="background:var(--booked)"></span>Κατειλημμένο</div>
+        <div class="legend"><span class="swatch" style="background:var(--arrival)"></span>Άφιξη</div>
+        <div class="legend"><span class="swatch" style="background:var(--departure)"></span>Αναχώρηση</div>
+        <div class="legend"><span class="swatch" style="background:var(--today)"></span>Σήμερα</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="prices" class="tab card hidden">
+    <h2>Τιμές</h2>
+    <div class="grid two">
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Βασικές τιμές ανά δωμάτιο</h3>
+        <div id="priceList"></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Γρήγορες οδηγίες</h3>
+        <p class="muted">Γράψε για κάθε δωμάτιο μία βασική τιμή. Όταν βάζεις νέα κράτηση, μπορείς να την αλλάζεις αν χρειάζεται.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="income" class="tab card hidden">
+    <h2>Έσοδα</h2>
+    <div class="grid four" id="incomeKpis"></div>
+    <div class="grid two" style="margin-top:12px">
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Μηνιαία επισκόπηση εσόδων</h3>
+        <div class="month-grid" id="monthSummary"></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Επιλεγμένος μήνας</h3>
+        <label>Διάλεξε μήνα</label>
+        <input id="incomeMonth" type="month">
+        <div id="selectedMonthBox" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;box-shadow:none;border:1px solid var(--line)">
+      <h3>Ανάλυση κρατήσεων</h3>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Δωμάτιο</th>
+              <th>Πελάτης</th>
+              <th>Διαμονή</th>
+              <th>Νύχχτες</th>
+              <th>Τιμή/νύχτα</th>
+              <th>Σύνολο</th>
+            </tr>
+          </thead>
+          <tbody id="incomeTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="notes" class="tab card hidden">
+    <h2>Σημειώσεις</h2>
+    <div class="grid two">
+      <div>
+        <label>Νέα σημείωση</label>
+        <textarea id="noteText" placeholder="Γράψε εδώ ό,τι θέλεις να θυμάσαι..."></textarea>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn primary" id="saveNoteBtn">Αποθήκευση σημείωσης</button>
+          <button class="btn secondary" id="clearNoteBtn">Καθαρισμός</button>
+        </div>
+        <input type="hidden" id="noteEditId">
+      </div>
+      <div>
+        <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+          <h3>Αποθηκευμένες σημειώσεις</h3>
+          <div id="noteList" class="note-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="backup" class="tab card hidden">
+    <h2>Backup & επαναφορά</h2>
+    <div class="grid two">
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Δημιουργία backup</h3>
+        <p class="muted">Αποθήκευσε όλα τα δωμάτια, τις κρατήσεις και τις σημειώσεις σε ένα αρχείο JSON.</p>
+        <div class="actions">
+          <button class="btn ok" id="downloadBackupBtn">Λήψη backup</button>
+        </div>
+        <div id="backupInfo" class="small muted" style="margin-top:10px"></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid var(--line)">
+        <h3>Επαναφορά backup</h3>
+        <label>Επίλεξε αρχείο backup (.json)</label>
+        <input id="restoreBackupInput" type="file" accept="application/json,.json">
+        <div class="actions" style="margin-top:10px">
+          <button class="btn primary" id="restoreBackupBtn">Επαναφορά</button>
+        </div>
+        <div class="small muted" style="margin-top:10px">Προσοχή: η επαναφορά αντικαθιστά τα τωρινά δεδομένα.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;box-shadow:none;border:1px solid var(--line)">
+      <h3>Τι περιλαμβάνει το backup</h3>
+      <div class="backup-list" id="backupPreview"></div>
+    </div>
+  </section>
+
+  <div class="footer-note">Τα δεδομένα αποθηκεύονται μόνο σε αυτή τη συσκευή (local storage), εκτός αν κάνεις backup.</div>
+</div>
+
+<script>
+(() => {
+  const today = new Date().toISOString().slice(0,10);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  const q = s => document.querySelector(s);
+  const el = (tag, attrs={}, html='') => {
+    const n = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs)) {
+      if(k === 'class') n.className = v;
+      else if(k === 'dataset') Object.assign(n.dataset, v);
+      else n.setAttribute(k,v);
+    }
+    if(html) n.innerHTML = html;
+    return n;
+  };
+  const load = (k, fallback) => JSON.parse(localStorage.getItem(k) || JSON.stringify(fallback));
+  const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+  const money = n => new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR'}).format(Number(n||0));
+  const formatMonthLabel = ym => {
+    const [y,m] = ym.split('-').map(Number);
+    return new Date(y,m-1,1).toLocaleDateString('el-GR',{month:'long', year:'numeric'});
+  };
+  const nightsBetween = (a,b) => {
+    if(!a || !b) return 0;
+    const d1 = new Date(a+'T00:00:00');
+    const d2 = new Date(b+'T00:00:00');
+    const diff = Math.round((d2-d1)/(1000*60*60*24));
+    return diff > 0 ? diff : 0;
+  };
+  const monthKey = dateStr => dateStr ? dateStr.slice(0,7) : '';
+  const overlapNightsInMonth = (checkIn, checkOut, ym) => {
+    const [y,m] = ym.split('-').map(Number);
+    const monthStart = new Date(y, m-1, 1);
+    const nextMonth = new Date(y, m, 1);
+    const start = new Date(checkIn+'T00:00:00');
+    const end = new Date(checkOut+'T00:00:00');
+    const overlapStart = start > monthStart ? start : monthStart;
+    const overlapEnd = end < nextMonth ? end : nextMonth;
+    const diff = Math.round((overlapEnd - overlapStart)/(1000*60*60*24));
+    return diff > 0 ? diff : 0;
+  };
+
+  let rooms = load('angelus_rooms', [
+    {id:uid(), name:'Δωμάτιο 1', note:'', basePrice:45},
+    {id:uid(), name:'Δωμάτιο 2', note:'', basePrice:45},
+    {id:uid(), name:'Δωμάτιο 3', note:'', basePrice:50},
+    {id:uid(), name:'Studio 1', note:'', basePrice:55},
+    {id:uid(), name:'Studio 2', note:'', basePrice:60},
+  ]);
+  let bookings = load('angelus_bookings', []);
+  let notes = load('angelus_notes', []);
+  let calendarMonth = load('angelus_calendar_month', today.slice(0,7));
+  let incomeMonth = load('angelus_income_month', today.slice(0,7));
+
+  function persist(){
+    save('angelus_rooms', rooms);
+    save('angelus_bookings', bookings);
+    save('angelus_notes', notes);
+    save('angelus_calendar_month', calendarMonth);
+    save('angelus_income_month', incomeMonth);
+  }
+
+  function roomStatus(roomId){
+    const active = bookings.find(b => b.roomId===roomId && b.checkIn <= today && b.checkOut > today);
+    if(active) return {text:'Κατειλημμένο', cls:'booked'};
+    const arrival = bookings.find(b => b.roomId===roomId && b.checkIn === today);
+    if(arrival) return {text:'Άφιξη', cls:'arrival'};
+    const departure = bookings.find(b => b.roomId===roomId && b.checkOut === today);
+    if(departure) return {text:'Αναχώρηση', cls:'departure'};
+    return {text:'Ελεύθερο', cls:'free'};
+  }
+
+  function renderTabs(){
+    document.querySelectorAll('.tabbtn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tabbtn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
+        btn.classList.add('active');
+        q('#'+btn.dataset.tab).classList.remove('hidden');
+      };
+    });
+  }
+
+  function renderOverview(){
+    const totalRooms = rooms.length;
+    const bookedNow = rooms.filter(r => roomStatus(r.id).text==='Κατειλημμένο').length;
+    const freeNow = rooms.filter(r => roomStatus(r.id).text==='Ελεύθερο').length;
+    q('#overviewKpis').innerHTML = '';
+    [
+      ['Σύνολο δωματίων', totalRooms],
+      ['Κατειλημμένα σήμερα', bookedNow],
+      ['Ελεύθερα σήμερα', freeNow],
+    ].forEach(([label,val]) => q('#overviewKpis').appendChild(el('div',{class:'kpi'}, `<div class="muted">${label}</div><div class="n">${val}</div>`)));
+
+    q('#todayStatus').innerHTML = '';
+    rooms.forEach(r => {
+      const s = roomStatus(r.id);
+      q('#todayStatus').appendChild(el('div',{class:'item'}, `
+        <div class="itemhead"><strong>${r.name}</strong><span class="pill ${s.cls}">${s.text}</span></div>
+        <div class="small muted">${r.note || '—'}</div>
+      `));
+    });
+
+    q('#allRooms').innerHTML = '';
+    rooms.forEach(r => {
+      q('#allRooms').appendChild(el('div',{class:'item'}, `
+        <div class="itemhead">
+          <div><strong>${r.name}</strong><div class="small muted">Βασική τιμή: ${money(r.basePrice || 0)} / νύχτα</div><div class="small muted">${r.note || '—'}</div></div>
+          <div class="actions">
+            <button class="btn secondary small" onclick="appEditRoom('${r.id}')">Επεξεργασία</button>
+            <button class="btn danger small" onclick="appDeleteRoom('${r.id}')">Διαγραφή</button>
+          </div>
+        </div>
+      `));
+    });
+  }
+
+  function renderBookingFormRooms(){
+    q('#bookingRoom').innerHTML = rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+  }
+
+  function renderBookings(){
+    const sorted = [...bookings].sort((a,b)=> (a.checkIn > b.checkIn ? 1 : -1));
+    q('#bookingList').innerHTML = sorted.length ? '' : '<div class="muted">Δεν υπάρχουν ακόμη κρατήσεις.</div>';
+    sorted.forEach(b => {
+      const room = rooms.find(r => r.id===b.roomId);
+      const nights = nightsBetween(b.checkIn,b.checkOut);
+      const total = nights * Number(b.nightPrice || 0);
+      const pillCls = b.status==='Άφιξη' ? 'arrival' : b.status==='Αναχώρηση' ? 'departure' : 'booked';
+      q('#bookingList').appendChild(el('div',{class:'item'}, `
+        <div class="itemhead">
+          <div>
+            <strong>${room ? room.name : 'Δωμάτιο'}</strong> · ${b.guestName || 'Χωρίς όνομα'}
+            <div class="small muted">${b.checkIn} → ${b.checkOut} · ${nights} νύχτες · ${money(total)}</div>
+            <div class="small muted">${b.note || '—'}</div>
+          </div>
+          <div><span class="pill ${pillCls}">${b.status}</span></div>
+        </div>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn secondary small" onclick="appEditBooking('${b.id}')">Επεξεργασία</button>
+          <button class="btn danger small" onclick="appDeleteBooking('${b.id}')">Διαγραφή</button>
+        </div>
+      `));
+    });
+  }
+
+  function renderCalendar(){
+    q('#calendarMonth').value = calendarMonth;
+    q('#calendarTitle').textContent = 'Μηνιαία προβολή · ' + formatMonthLabel(calendarMonth);
+    const [year, month] = calendarMonth.split('-').map(Number);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    q('#calendarHead').innerHTML = '<tr><th>Δωμάτιο</th>' + Array.from({length:daysInMonth}, (_,i)=> `<th>${i+1}</th>`).join('') + '</tr>';
+    q('#calendarBody').innerHTML = '';
+
+    rooms.forEach(room => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${room.name}</strong><div class="small muted">${money(room.basePrice||0)}</div></td>`;
+      for(let day=1; day<=daysInMonth; day++){
+        const dayStr = `${calendarMonth}-${String(day).padStart(2,'0')}`;
+        const td = document.createElement('td');
+        td.className = 'daycell';
+        if(dayStr === today) td.classList.add('today');
+        let symbol = '';
+        const matching = bookings.filter(b => b.roomId===room.id && b.checkIn <= dayStr && b.checkOut > dayStr);
+        const arrival = bookings.find(b => b.roomId===room.id && b.checkIn === dayStr);
+        const departure = bookings.find(b => b.roomId===room.id && b.checkOut === dayStr);
+        if(matching.length || arrival || departure){ td.classList.add('booked'); symbol = '●'; }
+        td.textContent = symbol;
+        td.title = (matching.length || arrival || departure) ? 'Κατειλημμένο' : 'Ελεύθερο';
+        tr.appendChild(td);
+      }
+      q('#calendarBody').appendChild(tr);
+    });
+  }
+
+  function renderPrices(){
+    q('#priceList').innerHTML = '';
+    rooms.forEach(r => {
+      const row = el('div',{class:'item'}, `
+        <div class="itemhead">
+          <div><strong>${r.name}</strong></div>
+          <div style="min-width:120px"><input type="number" step="0.01" min="0" value="${r.basePrice ?? ''}" data-price-room="${r.id}"></div>
+        </div>
+      `);
+      q('#priceList').appendChild(row);
+    });
+    document.querySelectorAll('[data-price-room]').forEach(inp => {
+      inp.addEventListener('change', e => {
+        const room = rooms.find(r => r.id===e.target.dataset.priceRoom);
+        if(room){ room.basePrice = Number(e.target.value || 0); persist(); renderAll(); }
+      });
+    });
+  }
+
+  function monthStats(){
+    const keys = [...new Set(bookings.flatMap(b => [monthKey(b.checkIn), monthKey(new Date(new Date(b.checkOut+'T00:00:00').getTime()-86400000).toISOString().slice(0,10))]).filter(Boolean))].sort();
+    return keys.map(ym => {
+      const related = bookings.map(b => {
+        const nights = overlapNightsInMonth(b.checkIn, b.checkOut, ym);
+        return {
+          booking:b,
+          nights,
+          total:nights * Number(b.nightPrice || 0)
+        };
+      }).filter(x => x.nights > 0);
+      return {
+        ym,
+        nights: related.reduce((s,x)=>s+x.nights,0),
+        income: related.reduce((s,x)=>s+x.total,0),
+        bookings: related.length,
+        avg: related.reduce((s,x)=>s+x.total,0) / (related.reduce((s,x)=>s+x.nights,0) || 1)
+      };
+    }).sort((a,b)=> a.ym.localeCompare(b.ym));
+  }
+
+  function renderIncome(){
+    q('#incomeMonth').value = incomeMonth;
+    const totals = bookings.map(b => ({
+      ...b,
+      nights: nightsBetween(b.checkIn,b.checkOut),
+      total: nightsBetween(b.checkIn,b.checkOut) * Number(b.nightPrice || 0)
+    }));
+    const totalIncome = totals.reduce((s,b)=>s+b.total,0);
+    const totalNights = totals.reduce((s,b)=>s+b.nights,0);
+    const avgNight = totalNights ? totalIncome/totalNights : 0;
+    const mstats = monthStats();
+    const current = mstats.find(x => x.ym === incomeMonth) || {ym:incomeMonth, nights:0, income:0, bookings:0, avg:0};
+
+    q('#incomeKpis').innerHTML='';
+    [
+      ['Συνολικά έσοδα', money(totalIncome)],
+      ['Συνολικές νύχτες', totalNights],
+      ['Μέση τιμή / νύχτα', money(avgNight)],
+      ['Έσοδα μήνα', money(current.income)]
+    ].forEach(([label,val])=> q('#incomeKpis').appendChild(el('div',{class:'kpi'}, `<div class="muted">${label}</div><div class="n" style="font-size:22px">${val}</div>`)));
+
+    q('#monthSummary').innerHTML = mstats.length ? '' : '<div class="muted">Δεν υπάρχουν ακόμη μηνιαία δεδομένα.</div>';
+    mstats.slice().reverse().forEach(m => {
+      q('#monthSummary').appendChild(el('div',{class:'month-card'}, `
+        <strong>${formatMonthLabel(m.ym)}</strong>
+        <div class="small muted" style="margin-top:6px">Κρατήσεις: ${m.bookings}</div>
+        <div class="small muted">Νύχτες: ${m.nights}</div>
+        <div class="small muted">Μέση τιμή: ${money(m.avg)}</div>
+        <div style="margin-top:8px;font-weight:800">${money(m.income)}</div>
+      `));
+    });
+
+    q('#selectedMonthBox').innerHTML = `
+      <div class="kpi">
+        <div class="muted">${formatMonthLabel(current.ym)}</div>
+        <div class="n" style="font-size:24px">${money(current.income)}</div>
+        <div class="small muted" style="margin-top:6px">Κρατήσεις: ${current.bookings} · Νύχτες: ${current.nights} · Μέση τιμή: ${money(current.avg)}</div>
+      </div>
+    `;
+
+    q('#incomeTable').innerHTML = totals.length ? '' : '<tr><td colspan="6" class="muted">Δεν υπάρχουν ακόμη δεδομένα.</td></tr>';
+    totals.forEach(b => {
+      const room = rooms.find(r => r.id===b.roomId);
+      q('#incomeTable').appendChild(el('tr',{}, `
+        <td>${room ? room.name : '—'}</td>
+        <td>${b.guestName || '—'}</td>
+        <td>${b.checkIn} → ${b.checkOut}</td>
+        <td>${b.nights}</td>
+        <td>${money(b.nightPrice)}</td>
+        <td>${money(b.total)}</td>
+      `));
+    });
+  }
+
+  function renderNotes(){
+    q('#noteList').innerHTML = notes.length ? '' : '<div class="muted">Δεν υπάρχουν ακόμη σημειώσεις.</div>';
+    notes.slice().reverse().forEach(n => {
+      q('#noteList').appendChild(el('div',{class:'item'}, `
+        <div class="itemhead">
+          <div><div>${(n.text||'').replace(/</g,'&lt;')}</div><div class="small muted">${n.createdAt}</div></div>
+          <div class="actions">
+            <button class="btn secondary small" onclick="appEditNote('${n.id}')">Επεξεργασία</button>
+            <button class="btn danger small" onclick="appDeleteNote('${n.id}')">Διαγραφή</button>
+          </div>
+        </div>
+      `));
+    });
+  }
+
+  function renderBackup(){
+    q('#backupInfo').textContent = `Τελευταία κατάσταση: ${rooms.length} δωμάτια, ${bookings.length} κρατήσεις, ${notes.length} σημειώσεις.`;
+    q('#backupPreview').innerHTML = '';
+    [
+      `Δωμάτια: ${rooms.length}`,
+      `Κρατήσεις: ${bookings.length}`,
+      `Σημειώσεις: ${notes.length}`,
+      `Μήνας ημερολογίου: ${calendarMonth}`,
+      `Μήνας εσόδων: ${incomeMonth}`
+    ].forEach(t => q('#backupPreview').appendChild(el('div',{class:'item'}, `<div>${t}</div>`)));
+  }
+
+  function renderAll(){
+    persist();
+    renderBookingFormRooms();
+    renderOverview();
+    renderBookings();
+    renderCalendar();
+    renderPrices();
+    renderIncome();
+    renderNotes();
+    renderBackup();
+  }
+
+  q('#saveRoomBtn').onclick = () => {
+    const id = q('#roomEditId').value;
+    const name = q('#roomName').value.trim();
+    const note = q('#roomNote').value.trim();
+    if(!name) return alert('Γράψε όνομα δωματίου.');
+    if(id){
+      const r = rooms.find(x=>x.id===id); if(r){ r.name=name; r.note=note; }
+    } else {
+      rooms.push({id:uid(), name, note, basePrice:0});
+    }
+    q('#roomEditId').value=''; q('#roomName').value=''; q('#roomNote').value='';
+    renderAll();
+  };
+  q('#resetRoomBtn').onclick = () => { q('#roomEditId').value=''; q('#roomName').value=''; q('#roomNote').value=''; };
+
+  q('#saveBookingBtn').onclick = () => {
+    const id = q('#bookingEditId').value;
+    const roomId = q('#bookingRoom').value;
+    const guestName = q('#guestName').value.trim();
+    const checkIn = q('#checkIn').value;
+    const checkOut = q('#checkOut').value;
+    const status = q('#bookingStatus').value;
+    const room = rooms.find(r => r.id===roomId);
+    const nightPrice = Number(q('#nightPrice').value || room?.basePrice || 0);
+    const note = q('#bookingNote').value.trim();
+    if(!roomId || !checkIn || !checkOut) return alert('Συμπλήρωσε δωμάτιο, άφιξη και αναχώρηση.');
+    if(checkOut <= checkIn) return alert('Η αναχώρηση πρέπει να είναι μετά την άφιξη.');
+    const payload = {id:id||uid(), roomId, guestName, checkIn, checkOut, status, nightPrice, note};
+    if(id) bookings = bookings.map(b => b.id===id ? payload : b); else bookings.push(payload);
+    q('#bookingEditId').value=''; q('#guestName').value=''; q('#checkIn').value=''; q('#checkOut').value=''; q('#nightPrice').value=''; q('#bookingNote').value=''; q('#bookingStatus').value='Κατειλημμένο';
+    renderAll();
+  };
+  q('#resetBookingBtn').onclick = () => {
+    q('#bookingEditId').value=''; q('#guestName').value=''; q('#checkIn').value=''; q('#checkOut').value=''; q('#nightPrice').value=''; q('#bookingNote').value=''; q('#bookingStatus').value='Κατειλημμένο';
+  };
+
+  q('#saveNoteBtn').onclick = () => {
+    const id = q('#noteEditId').value;
+    const text = q('#noteText').value.trim();
+    if(!text) return alert('Γράψε μία σημείωση.');
+    if(id){
+      const n = notes.find(x=>x.id===id); if(n) n.text = text;
+    } else {
+      notes.push({id:uid(), text, createdAt:new Date().toLocaleString('el-GR')});
+    }
+    q('#noteEditId').value=''; q('#noteText').value=''; renderAll();
+  };
+  q('#clearNoteBtn').onclick = () => { q('#noteEditId').value=''; q('#noteText').value=''; };
+
+  q('#calendarMonth').onchange = e => { calendarMonth = e.target.value || today.slice(0,7); renderAll(); };
+  q('#incomeMonth').onchange = e => { incomeMonth = e.target.value || today.slice(0,7); renderAll(); };
+  q('#prevMonthBtn').onclick = () => {
+    const [y,m] = calendarMonth.split('-').map(Number);
+    const d = new Date(y, m-2, 1);
+    calendarMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    renderAll();
+  };
+  q('#nextMonthBtn').onclick = () => {
+    const [y,m] = calendarMonth.split('-').map(Number);
+    const d = new Date(y, m, 1);
+    calendarMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    renderAll();
+  };
+  q('#currentMonthBtn').onclick = () => { calendarMonth = today.slice(0,7); renderAll(); };
+
+  q('#downloadBackupBtn').onclick = () => {
+    const payload = {
+      app: 'Angelos Rooms',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      calendarMonth,
+      incomeMonth,
+      rooms,
+      bookings,
+      notes
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+    a.href = URL.createObjectURL(blob);
+    a.download = `angelos-rooms-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  };
+
+  q('#restoreBackupBtn').onclick = async () => {
+    const file = q('#restoreBackupInput').files?.[0];
+    if(!file) return alert('Διάλεξε πρώτα ένα αρχείο backup.');
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if(!Array.isArray(data.rooms) || !Array.isArray(data.bookings) || !Array.isArray(data.notes)) {
+        throw new Error('Μη έγκυρο backup.');
+      }
+      if(!confirm('Να γίνει επαναφορά; Θα αντικατασταθούν τα τωρινά δεδομένα.')) return;
+      rooms = data.rooms;
+      bookings = data.bookings;
+      notes = data.notes;
+      calendarMonth = data.calendarMonth || today.slice(0,7);
+      incomeMonth = data.incomeMonth || today.slice(0,7);
+      q('#restoreBackupInput').value = '';
+      renderAll();
+      alert('Η επαναφορά ολοκληρώθηκε.');
+    } catch (e) {
+      alert('Το αρχείο backup δεν μπόρεσε να διαβαστεί.');
+    }
+  };
+
+  window.appEditRoom = (id) => {
+    const r = rooms.find(x=>x.id===id); if(!r) return;
+    q('#roomEditId').value=r.id; q('#roomName').value=r.name; q('#roomNote').value=r.note||'';
+    document.querySelector('[data-tab="overview"]').click();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  window.appDeleteRoom = (id) => {
+    if(!confirm('Να διαγραφεί το δωμάτιο;')) return;
+    rooms = rooms.filter(r=>r.id!==id);
+    bookings = bookings.filter(b=>b.roomId!==id);
+    renderAll();
+  };
+  window.appEditBooking = (id) => {
+    const b = bookings.find(x=>x.id===id); if(!b) return;
+    q('#bookingEditId').value=b.id; q('#bookingRoom').value=b.roomId; q('#guestName').value=b.guestName||''; q('#checkIn').value=b.checkIn; q('#checkOut').value=b.checkOut; q('#nightPrice').value=b.nightPrice; q('#bookingStatus').value=b.status; q('#bookingNote').value=b.note||'';
+    document.querySelector('[data-tab="bookings"]').click();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  window.appDeleteBooking = (id) => {
+    if(!confirm('Να διαγραφεί η κράτηση;')) return;
+    bookings = bookings.filter(b=>b.id!==id); renderAll();
+  };
+  window.appEditNote = (id) => {
+    const n = notes.find(x=>x.id===id); if(!n) return;
+    q('#noteEditId').value=n.id; q('#noteText').value=n.text;
+    document.querySelector('[data-tab="notes"]').click();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  window.appDeleteNote = (id) => {
+    if(!confirm('Να διαγραφεί η σημείωση;')) return;
+    notes = notes.filter(n=>n.id!==id); renderAll();
+  };
+
+  renderTabs();
+  renderAll();
+})();
+</script>
+</body>
+</html>
